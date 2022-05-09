@@ -1,43 +1,43 @@
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
+import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.function.Supplier;
 
 
 public class Main extends BasicWindow {
     private BasicPanel mainScreen;
 
-
     public Main() throws IOException {
         super(Constants.MAIN_WINDOW_W, Constants.MAIN_WINDOW_H);
         ForeignExchange.load();
-        mainScreen=new PanelMainScreen();
+        mainScreen = new PanelMainScreen();
         this.add(mainScreen);
         myBottom();
         this.setVisible(true);
     }
+
     public void myBottom() {
-        int y = 70;
-        int h = 17;
-        int x = 50;
-        int w = 300;
+        int y = Constants.BUTTON_DISTANCE;
+        int x = Constants.BUTTON_DISTANCE;
         int counter = 0;
-        for (ForeignExchange foreignExchange : ForeignExchange.foreignExchanges) {
-            mainBottoms(x, y, w, h, foreignExchange.getChangeFrom() + "-" + foreignExchange.getChangeTo()
+        ArrayList<ForeignExchange> allExchanges = new ArrayList<>( ForeignExchange.All_EXCHANGES);
+        allExchanges.sort(Comparator.comparing(ForeignExchange::getChangeTo));
+        for (ForeignExchange foreignExchange : allExchanges) {
+            mainBottoms(x, y, Constants.BUTTON_W, Constants.BUTTON_H, ForeignExchange.COMPARISON + "-" + foreignExchange.getChangeTo()
                     , () -> new CoinJPanel(foreignExchange));
             counter++;
-            x = x + w;
-            if (counter == 3) {
+            x += Constants.BUTTON_W;
+            if (counter == Constants.ALL_EXCHANGES_SIZE_IN_ROW) {
                 counter = 0;
-                x = 50;
-                y = y + h;
+                x = Constants.BUTTON_DISTANCE;
+                y += Constants.BUTTON_H;
             }
 
         }
     }
+
     public void mainBottoms(int x, int y, int w, int h, String titleOn, Supplier<CoinJPanel> supplier) {
         Button button = new Button(titleOn);
         button.setFont(Constants.FONT);
@@ -52,6 +52,7 @@ public class Main extends BasicWindow {
         });
         mainScreen.add(button);
     }
+
     public static void main(String[] args) throws IOException {
         Main main = new Main();
     }

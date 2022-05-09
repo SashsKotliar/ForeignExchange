@@ -12,21 +12,20 @@ public class CoinJPanel extends BasicPanel {
     public CoinJPanel(ForeignExchange foreignExchange) {
         super(0, 0, Constants.MAIN_WINDOW_W, Constants.MAIN_WINDOW_H, null);
         this.foreignExchange = foreignExchange;
-        this.stop=false;
+        this.stop = false;
         initPanel();
     }
 
     public void runConversion(String rent) {
         this.conversion.setText("Conversion is: " + rent +
-                " (from-" + this.foreignExchange.getChangeFrom() + " to- " + this.foreignExchange.getChangeTo()+")");
+                " (from-" + ForeignExchange.COMPARISON + " to- " + this.foreignExchange.getChangeTo() + ")");
     }
 
     public void run() {
         new Thread(() -> {
             while (!stop) {
-                runConversion(String.valueOf(foreignExchange.rateConversion()));
-                System.out.println(foreignExchange.rateConversion());
                 try {
+                    runConversion(String.valueOf(foreignExchange.rateConversion()));
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -34,30 +33,32 @@ public class CoinJPanel extends BasicPanel {
             }
         }).start();
     }
-    public void stopPanel(){
-        this.stop=true;
+
+    public void stopPanel() {
+        this.stop = true;
     }
 
-    public JLabel initLabel(int x, int y, int w, int h,int size,Color color) {
-        JLabel label = new JLabel("", SwingConstants.CENTER);
+    public JLabel initLabel(String text,int x, int y, int w, int h, int size, Color color) {
+        JLabel label = new JLabel(text, SwingConstants.CENTER);
         label.setBounds(x, y, w, h);
-        label.setFont(new Font("ariel",Font.BOLD,size));
+        label.setFont(new Font("ariel", Font.BOLD, size));
         label.setForeground(color);
+        label.setBackground(color.darker());
+        label.setOpaque(true);
+
         return label;
     }
 
     public void initPanel() {
-        this.conversion = initLabel(0, 0, Constants.MAIN_WINDOW_W, 100,40,Color.cyan);
+        this.conversion = initLabel("",0, 0, Constants.MAIN_WINDOW_W, Constants.TITLE_H, Constants.TITLE_H/3, Color.cyan);
         this.add(conversion);
         run();
         this.userFiledText = new JTextField();
-        userFiledText.setBounds(SwingConstants.CENTER, Constants.MAIN_WINDOW_H / 4, Constants.MAIN_WINDOW_W, Constants.BUTTON_H);
+        userFiledText.setBounds(SwingConstants.CENTER, Constants.MAIN_WINDOW_H / 4, Constants.MAIN_WINDOW_W, Constants.BUTTON_DISTANCE);
         this.add(userFiledText);
-        this.result = initLabel(SwingConstants.CENTER,userFiledText.getY()+userFiledText.getHeight(),Constants.MAIN_WINDOW_W,100,20,Color.black);
-        result.setText("No requests yet");
+        this.result = initLabel("No requests yet",SwingConstants.CENTER, userFiledText.getY() + userFiledText.getHeight(), Constants.MAIN_WINDOW_W, Constants.TITLE_H, Constants.TITLE_H/4, Color.white);
         this.add(result);
-        JLabel message =initLabel(userFiledText.getX(), userFiledText.getY() - Constants.BUTTON_H, Constants.MAIN_WINDOW_W, 100,20,Color.cyan);
-        message.setText("Tap the sum ov conversion. Only numbers!");
+        JLabel message = initLabel("Tap the sum to conversion. Only numbers!",userFiledText.getX(), userFiledText.getY() - Constants.BUTTON_DISTANCE, Constants.MAIN_WINDOW_W, Constants.BUTTON_DISTANCE, Constants.TITLE_H/4, Color.cyan.brighter());
         this.add(message);
         this.backBottom();
         getTextFromUser();
@@ -68,7 +69,7 @@ public class CoinJPanel extends BasicPanel {
             String text = userFiledText.getText();
             try {
                 float sum = Float.parseFloat(text);
-                this.result.setText(text +" USD- "+ " cast to " + foreignExchange.getChangeTo() + " is: " + foreignExchange.rateConversion() * sum);
+                this.result.setText(text + " USD- " + " cast to " + foreignExchange.getChangeTo() + " is: " + foreignExchange.rateConversion() * sum);
             } catch (NumberFormatException e1) {
                 result.setText("Error!Type only numbers!");
             }
@@ -76,16 +77,16 @@ public class CoinJPanel extends BasicPanel {
 
         });
     }
+
     public void backBottom() {
         Button button = new Button("Back to the main");
         button.setFont(Constants.FONT);
-        button.setBounds(0, 400, Constants.MAIN_WINDOW_W/5, Constants.MAIN_WINDOW_W/5);
+        button.setBounds(0, Constants.MAIN_WINDOW_H-(Constants.BUTTON_DISTANCE*2), Constants.BUTTON_DISTANCE*2, Constants.BUTTON_DISTANCE*2);
         button.setForeground(Color.cyan.darker());
         button.setBackground(Color.black);
         button.addActionListener(e -> {
-            Main main = null;
             try {
-                main = new Main();
+                Main main = new Main();
                 main.setVisible(true);
                 (SwingUtilities.getAncestorOfClass(JFrame.class, this)).setVisible(false);
                 stopPanel();

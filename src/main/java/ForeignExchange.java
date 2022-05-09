@@ -12,58 +12,35 @@ import java.util.Set;
 
 public class ForeignExchange {
     public static final String COMPARISON = "USD";
-    private String changeFrom;
-    private String changeTo;
+    private final String changeTo;
     private boolean reverse;
-    private Element reference;
-    public static Set<ForeignExchange> foreignExchanges = new HashSet<>();
+    private float value;
+    public static final Set<ForeignExchange> All_EXCHANGES = new HashSet<>();
 
     public ForeignExchange(Element element) {
-        this.reference = element.getElementById("p");
+        this.value = Float.parseFloat(Objects.requireNonNull(element.getElementById("p")).text());
         String total = element.getElementsByTag("a").get(0).text();
         int index = total.indexOf(COMPARISON);
 
-        this.changeFrom = COMPARISON;
         this.changeTo = total.replace(COMPARISON, "");
         this.reverse = (index != 0);
     }
 
 
     public float rateConversion() {
-        ForeignExchange.foreignExchanges.clear();
-        try {
-            ForeignExchange.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        ForeignExchange a = ForeignExchange.getByCurrency(this.changeTo);
-        float value = Float.parseFloat(Objects.requireNonNull(a.reference.getElementById("p")).text());
+        refresh();
+        float value = this.value;
         if (this.reverse)
             value = 1 / value;
         return value;
     }
 
-    public ForeignExchange(String changeFrom, String changeTo) {
-        this.changeFrom = changeFrom;
-        this.changeTo = changeTo;
-    }
-
-    public static boolean isExchangeable(String currency) {
-        for (ForeignExchange foreignExchange : foreignExchanges)
-            if (foreignExchange.changeTo.equals(currency) || foreignExchange.changeFrom.equals(currency))
-                return true;
-        return false;
-    }
 
     private static ForeignExchange getByCurrency(String currency) {
-        for (ForeignExchange foreignExchange : foreignExchanges)
-            if (foreignExchange.changeTo.equals(currency) || foreignExchange.changeFrom.equals(currency))
+        for (ForeignExchange foreignExchange : All_EXCHANGES)
+            if (foreignExchange.changeTo.equals(currency))
                 return foreignExchange;
-        throw new IllegalArgumentException("no currency named " + currency);
-    }
-
-    public String getChangeFrom() {
-        return changeFrom;
+        return null;
     }
 
     public String getChangeTo() {
@@ -73,18 +50,46 @@ public class ForeignExchange {
     public static float exchange(String c_from, String c_to, float amount) {
         ForeignExchange from = getByCurrency(c_from);
         ForeignExchange to = getByCurrency(c_to);
+        if (from == null)
+            throw new IllegalArgumentException("currency " + c_from + " doesn't exist");
+        if (to == null)
+            throw new IllegalArgumentException("currency " + c_to + " doesn't exist");
         float as_usd = from.exchange_to_usd(amount);
         return to.exchange_from_usd(as_usd);
     }
 
-
     public static void load() throws IOException {
-        Document myWeb = Jsoup.connect("https://tradingeconomics.com/currencies").get();
+        Document myWeb = getDocument();
 
         ArrayList<Element> elements = myWeb.getElementsByClass("datatable-row");
-        for (int i = 0; i < elements.size(); i++) {
-            foreignExchanges.add(new ForeignExchange(elements.get(i)));
+        for (Element element : elements) {
+            ForeignExchange temp = new ForeignExchange(element);
+            All_EXCHANGES.add(temp);
         }
+    }
+
+    public void refresh() {
+        try {
+            Document myWeb = getDocument();
+            String symbol;
+            if (reverse) {
+                symbol = changeTo + COMPARISON;
+            } else {
+                symbol = COMPARISON + changeTo;
+            }
+            symbol += ":CUR";
+
+            ArrayList<Element> elements = myWeb.getElementsByAttributeValue("data-symbol", symbol);
+            ForeignExchange foreignExchange = new ForeignExchange(elements.get(0));
+
+            this.value = foreignExchange.value;
+            this.reverse = foreignExchange.reverse;
+        } catch (IOException ignore) {
+        }
+    }
+
+    private static Document getDocument() throws IOException {
+        return Jsoup.connect("https://tradingeconomics.com/currencies").get();
     }
 
     public float exchange_from_usd(float source_amount) {
@@ -95,13 +100,20 @@ public class ForeignExchange {
         return source_amount / rateConversion();
     }
 
-    public boolean equals(ForeignExchange other) {
-        return this.changeFrom.equals(other.changeFrom) && this.changeTo.equals(other.changeTo);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ForeignExchange that)) return false;
+        return reverse == that.reverse && changeTo.equals(that.changeTo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(changeTo, reverse);
     }
 
     @Override
     public String toString() {
-        return "changeFrom='" + changeFrom + '\'' +
-                ", changeTo='" + changeTo + '\'' + "\n" + this.rateConversion() + "\n";
+        return "changeTo='" + changeTo + '\'' + "\n" + this.rateConversion() + "\n";
     }
 }
