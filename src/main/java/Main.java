@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,22 +18,28 @@ public class Main extends BasicWindow {
     }
 
     public void myBottom() {
-        int y = Constants.BUTTON_DISTANCE;
-        int x = Constants.BUTTON_DISTANCE;
+        int y = Constants.BUTTON_Y;
+        int x = Constants.BUTTON_X;
         int counter = 0;
+        int rows = 0;
         ArrayList<ForeignExchange> allExchanges = new ArrayList<>( ForeignExchange.All_EXCHANGES);
         allExchanges.sort(Comparator.comparing(ForeignExchange::getChangeTo));
+
         for (ForeignExchange foreignExchange : allExchanges) {
-            mainBottoms(x, y, Constants.BUTTON_W, Constants.BUTTON_H, ForeignExchange.COMPARISON + "-" + foreignExchange.getChangeTo()
-                    , () -> new CoinJPanel(foreignExchange));
+            mainBottoms(x, y, Constants.BUTTON_W, Constants.BUTTON_H, ForeignExchange.COMPARISON
+                            + "-" + foreignExchange.getChangeTo(), () -> new CoinJPanel(foreignExchange));
             counter++;
             x += Constants.BUTTON_W;
-            if (counter == Constants.ALL_EXCHANGES_SIZE_IN_ROW) {
+            if (counter == Constants.BUTTONS_IN_ROW) {
                 counter = 0;
-                x = Constants.BUTTON_DISTANCE;
+                rows++;
+                if (rows ==Constants.LAST_ROW){
+                    x = Constants.BUTTON_X + Constants.BUTTON_W/2;
+                } else {
+                    x = Constants.BUTTON_X;
+                }
                 y += Constants.BUTTON_H;
             }
-
         }
     }
 

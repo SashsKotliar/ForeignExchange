@@ -17,8 +17,8 @@ public class CoinJPanel extends BasicPanel {
     }
 
     public void runConversion(String rent) {
-        this.conversion.setText("Conversion is: " + rent +
-                " (from-" + ForeignExchange.COMPARISON + " to- " + this.foreignExchange.getChangeTo() + ")");
+        this.conversion.setText("The price is: " + rent +
+                " (from " + ForeignExchange.COMPARISON + " to " + this.foreignExchange.getChangeTo() + ")");
     }
 
     public void run() {
@@ -54,11 +54,11 @@ public class CoinJPanel extends BasicPanel {
         this.add(conversion);
         run();
         this.userFiledText = new JTextField();
-        userFiledText.setBounds(SwingConstants.CENTER, Constants.MAIN_WINDOW_H / 4, Constants.MAIN_WINDOW_W, Constants.BUTTON_DISTANCE);
+        userFiledText.setBounds(SwingConstants.CENTER, Constants.MAIN_WINDOW_H / 4, Constants.MAIN_WINDOW_W, Constants.BUTTON_X);
         this.add(userFiledText);
         this.result = initLabel("No requests yet",SwingConstants.CENTER, userFiledText.getY() + userFiledText.getHeight(), Constants.MAIN_WINDOW_W, Constants.TITLE_H, Constants.TITLE_H/4, Color.white);
         this.add(result);
-        JLabel message = initLabel("Tap the sum to conversion. Only numbers!",userFiledText.getX(), userFiledText.getY() - Constants.BUTTON_DISTANCE, Constants.MAIN_WINDOW_W, Constants.BUTTON_DISTANCE, Constants.TITLE_H/4, Color.cyan.brighter());
+        JLabel message = initLabel("Enter the sum you want to convert. Numbers only!",userFiledText.getX(), userFiledText.getY() - Constants.BUTTON_X, Constants.MAIN_WINDOW_W, Constants.BUTTON_X, Constants.TITLE_H/4, Color.cyan.brighter());
         this.add(message);
         this.backBottom();
         getTextFromUser();
@@ -69,9 +69,9 @@ public class CoinJPanel extends BasicPanel {
             String text = userFiledText.getText();
             try {
                 float sum = Float.parseFloat(text);
-                this.result.setText(text + " USD- " + " cast to " + foreignExchange.getChangeTo() + " is: " + foreignExchange.rateConversion() * sum);
+                this.result.setText(text + " USD " + "converted to: " + foreignExchange.rateConversion() * sum + "" + foreignExchange.getChangeTo());
             } catch (NumberFormatException e1) {
-                result.setText("Error!Type only numbers!");
+                result.setText("Error!Type numbers only!");
             }
             userFiledText.setText(null);
 
@@ -79,9 +79,9 @@ public class CoinJPanel extends BasicPanel {
     }
 
     public void backBottom() {
-        Button button = new Button("Back to the main");
+        Button button = new Button("Back to the main menu");
         button.setFont(Constants.FONT);
-        button.setBounds(0, Constants.MAIN_WINDOW_H-(Constants.BUTTON_DISTANCE*2), Constants.BUTTON_DISTANCE*2, Constants.BUTTON_DISTANCE*2);
+        button.setBounds(0, Constants.MAIN_WINDOW_H-(Constants.BUTTON_X *2), Constants.BUTTON_X *2, Constants.BUTTON_X *2);
         button.setForeground(Color.cyan.darker());
         button.setBackground(Color.black);
         button.addActionListener(e -> {
